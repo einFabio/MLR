@@ -188,10 +188,10 @@ class VAE(nn.Module):
         #skip connection
         self.fc7 = nn.Linear(h_dim1, h_dim1)
 
-    def encoder(self, x):
+    def encoder(self, x):   #x is stimulus, h is fed into fc7 to skip, introduces nonlinearities via RELU for linear layers
         h = F.relu(self.fc1(x))
         hskip = F.relu(self.fc7(h))
-        h = F.relu(self.fc2(h))
+        h = F.relu(self.fc2(h))   #after x went through layer 1 and 2 it is fed into 31-34 see below
         return self.fc31(h), self.fc32(h), self.fc33(h), self.fc34(h), hskip  # mu, log_var
 
     def sampling(self, mu, log_var):
@@ -203,6 +203,10 @@ class VAE(nn.Module):
         h = F.relu(self.fc4c(z_color)) + F.relu(self.fc4s(z_shape))
         h = F.relu(self.fc5(h))
         return torch.sigmoid(self.fc6(h))
+    
+        #decodes from the skip connection
+    def decoder_skip(self, z_shape, z_color, hskip):
+        return torch.sigmoid(self.fc6(hskip))
     
     #decodes from the color map
     def decoder_color(self, z_shape, z_color, hskip):
@@ -221,10 +225,6 @@ class VAE(nn.Module):
         h = F.relu(self.fc4c(z_color)) + F.relu(self.fc4s(z_shape))
         h = (F.relu(self.fc5(h)) + hskip)
         return torch.sigmoid(self.fc6(h))
-    
-    #decodes from the skip connection
-    def decoder_skip(self, z_shape, z_color, hskip):
-        return torch.sigmoid(self.fc6(hskip))
 
     def forward_layers(self, l1,l2, layernum,whichdecode):
         hskip = F.relu(self.fc7(l1))
