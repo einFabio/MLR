@@ -230,8 +230,8 @@ class VAE(nn.Module):
         hskip = F.relu(self.fc7(l1))
         if layernum == 1:
            h = F.relu(self.fc2(l1))
-           mu_shape = self.fc31(h)
-           log_var_shape = self.fc32(h)
+           mu_shape = self.fc31(h) #while impossible to detect by reading the code, fc31/32's context point to them learning the mu and var respectively
+           log_var_shape = self.fc32(h)  #its common for VAEs to have these parallel encoding layers to learn mu and var
            mu_color = self.fc33(h)
            log_var_color = self.fc34(h)
            z_shape = self.sampling(mu_shape, log_var_shape)
@@ -562,7 +562,7 @@ def BPTokens_with_labels(bp_outdim, bpPortion,storeLabels, shape_coef, color_coe
             tkLink_tot = torch.randperm(bp_outdim)  # for each token figure out which connections will be set to 0
             notLink = tkLink_tot[bpPortion:]  # list of 0'd BPs for this token
             if layernum == 1:
-                BP_in_eachimg = torch.mm(l1_act[items, :].view(1, -1), L1_fw)
+                BP_in_eachimg = torch.mm(l1_act[items, :].view(1, -1), L1_fw)  #l1_act = F.relu(vae.fc1(image))
             elif layernum==2:
                 BP_in_eachimg = torch.mm(l2_act[items, :].view(1, -1), L2_fw)
             else:
